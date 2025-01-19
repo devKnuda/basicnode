@@ -35,16 +35,6 @@ This project is part of the AppDev2 course, week 3. The goal is to practice work
 - [Express.js POST Method](https://expressjs.com/en/api.html#app.post.method)
 - [Express.js Route Parameters](https://expressjs.com/en/guide/routing.html#route-parameters)
 
-## Submission
-
-1. Publish your code to your GitHub repository.
-2. Submit the URL to your public GitHub repository.
-
-## Notes
-
-- This is an individual assignment.
-- Write clean and organized code.
-- Commit your changes frequently.
 ## Accessing the Endpoints
 
 You can use `curl` to test the different endpoints of your application.
