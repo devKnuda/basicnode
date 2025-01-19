@@ -19,6 +19,7 @@ const quotes = [
 
 server.set('port', port);
 server.use(express.static('public'));
+server.use(express.json());  // Add JSON parser middleware
 
 function getRoot(req, res, next) {
     res.status(HTTP_CODES.SUCCESS.OK).send('Hello World').end();
@@ -35,10 +36,28 @@ function getQuote(req, res, next) {
     res.status(HTTP_CODES.SUCCESS.OK).send(quotes[randomIndex]).end();
 }
 
+// Add sum handler
+function postSum(req, res) {
+    const a = parseInt(req.params.a);
+    const b = parseInt(req.params.b);
+    
+    if (isNaN(a) || isNaN(b)) {
+        return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
+                 .send('Parameters must be numbers')
+                 .end();
+    }
+    
+    const sum = a + b;
+    res.status(HTTP_CODES.SUCCESS.OK)
+       .send({ result: sum })
+       .end();
+}
+
 // Add routes
 server.get("/", getRoot);
 server.get("/tmp/poem", getPoem);
 server.get("/tmp/quote", getQuote);
+server.post("/tmp/sum/:a/:b", postSum);
 
 server.listen(server.get('port'), function () {
     console.log('server running', server.get('port'));
