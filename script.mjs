@@ -6,10 +6,7 @@ const port = (process.env.PORT || 8000);
 
 // Add content arrays
 const poems = [
-    "Roses are red,\nViolets are blue,\nCoding is fun,\nAnd so are you!",
-    "The sky is blue,\nThe grass is green,\nI love coding,\nIt's quite keen!",
-    "The sun is bright,\nThe moon is pale,\nCoding is fun,\nIt never fails!",
-    "The world is big,\nAnd life is long,\nCoding is great,\nIt's never wrong!",
+    "Roses are red,\nViolets are blue,\nCoding is fun,\nAnd so are you!"
 ];
 
 const quotes = [
