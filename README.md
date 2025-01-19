@@ -44,7 +44,7 @@ You can use `curl` to test the different endpoints of your application.
 To get a poem, use the following command:
 
 ```sh
-curl http://localhost:3000/tmp/poem
+curl http://localhost:8000/tmp/poem
 ```
 
 ### Quote Endpoint
@@ -52,7 +52,7 @@ curl http://localhost:3000/tmp/poem
 To get a random quote, use the following command:
 
 ```sh
-curl http://localhost:3000/tmp/quote
+curl http://localhost:8000/tmp/quote
 ```
 
 ### Sum Endpoint
@@ -60,7 +60,7 @@ curl http://localhost:3000/tmp/quote
 To get the sum of two numbers, use the following command:
 
 ```sh
-curl -X POST http://localhost:3000/tmp/sum/5/10
+curl -X POST http://localhost:8000/tmp/sum/5/10
 ```
 
 Replace `5` and `10` with any numbers you want to sum.
