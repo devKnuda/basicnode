@@ -64,3 +64,16 @@ curl -X POST http://localhost:8000/tmp/sum/5/10
 ```
 
 Replace `5` and `10` with any numbers you want to sum.
+
+### Card Deck API
+
+The application now includes a Card Deck API with the following endpoints:
+
+#### Create a New Deck
+```sh
+curl -X POST http://localhost:8000/tmp/deck
+```
+Returns a deck_id that can be used for subsequent operations.
+
+### Shuffle a Deck
+
