@@ -76,4 +76,19 @@ curl -X POST http://localhost:8000/tmp/deck
 Returns a deck_id that can be used for subsequent operations.
 
 ### Shuffle a Deck
+```sh
+curl -X PATCH http://localhost:8000/tmp/deck/shuffle/{deck_id}
+```
+Randomly shuffles all cards in the specified deck.
 
+### View a Deck
+```sh
+curl http://localhost:8000/tmp/deck/{deck_id}
+```
+Returns all cards currently in the deck.
+
+### Draw a Card
+```sh
+curl http://localhost:8000/tmp/deck/{deck_id}/card
+```
+Draws and returns the top card from the deck.
