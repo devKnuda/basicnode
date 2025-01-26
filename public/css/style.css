@@ -80,11 +80,9 @@ footer {
 }
 
 .card-display {
-    margin: 20px 0;
-    min-height: 200px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    margin: 20px 0;
 }
 
 .card {
@@ -92,13 +90,52 @@ footer {
     height: 140px;
     border: 2px solid #333;
     border-radius: 10px;
-    padding: 10px;
-    margin: 5px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     background: white;
+    position: relative;
+    margin: 5px;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+}
+
+.hearts, .diamonds { color: red; }
+.clubs, .spades { color: black; }
+
+.deck-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+    padding: 20px;
+}
+
+.card.drawn {
+    animation: drawCard 0.5s ease-out;
+}
+
+.card.shuffle {
+    animation: shuffle 0.5s ease-in-out;
+}
+
+@keyframes drawCard {
+    from { transform: translateY(-100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shuffle {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    75% { transform: rotate(-15deg); }
+    100% { transform: rotate(0deg); }
 }
 
 .red {
@@ -107,4 +144,8 @@ footer {
 
 .black {
     color: black;
+}
+
+#hideDeck {
+    background: #f44336; /* Red color to distinguish from other buttons */
 }
