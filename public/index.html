@@ -27,5 +27,84 @@
         </div>
     </div>
     <script src="js/app.js"></script>
+    <script>
+        class DeckManager {
+            constructor() {
+                this.currentDeckId = '';
+                this.initializeEventListeners();
+            }
+
+            async createDeck() {
+                const response = await fetch('/tmp/deck', { method: 'POST' });
+                const data = await response.json();
+                this.currentDeckId = data.deck_id;
+                document.getElementById('deckId').value = this.currentDeckId;
+            }
+
+            async shuffleDeck() {
+                const deckId = this.getCurrentDeckId();
+                if (!deckId) return;
+                
+                await fetch(`/tmp/deck/shuffle/${deckId}`, { method: 'PATCH' });
+            }
+
+            async drawCard() {
+                const deckId = this.getCurrentDeckId();
+                if (!deckId) return;
+
+                const response = await fetch(`/tmp/deck/${deckId}/card`);
+                const data = await response.json();
+                this.displayCard(data.card);
+            }
+
+            async viewDeck() {
+                const deckId = this.getCurrentDeckId();
+                if (!deckId) return;
+
+                const response = await fetch(`/tmp/deck/${deckId}`);
+                const data = await response.json();
+                this.displayDeck(data.cards);
+            }
+
+            getCurrentDeckId() {
+                return document.getElementById('deckId').value;
+            }
+
+            displayCard(card) {
+                const display = document.getElementById('cardDisplay');
+                const color = ['hearts', 'diamonds'].includes(card.suit) ? 'red' : 'black';
+                
+                display.innerHTML = `
+                    <div class="card ${color}">
+                        <div>${card.value}</div>
+                        <div>${card.suit}</div>
+                    </div>
+                `;
+            }
+
+            displayDeck(cards) {
+                const display = document.getElementById('deckDisplay');
+                display.innerHTML = cards.map(card => {
+                    const color = ['hearts', 'diamonds'].includes(card.suit) ? 'red' : 'black';
+                    return `
+                        <div class="card ${color}">
+                            <div>${card.value}</div>
+                            <div>${card.suit}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            initializeEventListeners() {
+                document.getElementById('createDeck').addEventListener('click', () => this.createDeck());
+                document.getElementById('shuffleDeck').addEventListener('click', () => this.shuffleDeck());
+                document.getElementById('drawCard').addEventListener('click', () => this.drawCard());
+                document.getElementById('viewDeck').addEventListener('click', () => this.viewDeck());
+            }
+        }
+
+        // Initialize the application
+        new DeckManager();
+    </script>
 </body>
 </html>
