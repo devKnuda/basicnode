@@ -1,5 +1,7 @@
 import express from 'express'
 import HTTP_CODES from './utils/httpCodes.mjs';
+import Deck from './models/Deck.mjs';
+import { v4 as uuidv4 } from 'uuid';
 
 const server = express();
 const port = (process.env.PORT || 8000);
@@ -20,6 +22,9 @@ const quotes = [
 server.set('port', port);
 server.use(express.static('public'));
 server.use(express.json());  // Add JSON parser middleware
+
+// Store for decks
+const decks = new Map();
 
 function getRoot(req, res, next) {
     res.status(HTTP_CODES.SUCCESS.OK).send('Hello World').end();
@@ -53,11 +58,62 @@ function postSum(req, res) {
        .end();
 }
 
+// Create new deck
+function createDeck(req, res) {
+    const deckId = uuidv4();
+    const deck = new Deck(deckId);
+    decks.set(deckId, deck);
+    res.status(HTTP_CODES.SUCCESS.OK).json({ deck_id: deckId });
+}
+
+// Shuffle deck
+function shuffleDeck(req, res) {
+    const deck = decks.get(req.params.deck_id);
+    if (!deck) {
+        return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
+                 .json({ error: 'Deck not found' });
+    }
+    deck.shuffle();
+    res.status(HTTP_CODES.SUCCESS.OK)
+       .json({ message: 'Deck shuffled' });
+}
+
+// Get deck
+function getDeck(req, res) {
+    const deck = decks.get(req.params.deck_id);
+    if (!deck) {
+        return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
+                 .json({ error: 'Deck not found' });
+    }
+    res.status(HTTP_CODES.SUCCESS.OK)
+       .json({ cards: deck.cards });
+}
+
+// Draw card
+function drawCard(req, res) {
+    const deck = decks.get(req.params.deck_id);
+    if (!deck) {
+        return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
+                 .json({ error: 'Deck not found' });
+    }
+    const card = deck.drawCard();
+    if (!card) {
+        return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
+                 .json({ error: 'No cards left' });
+    }
+    res.status(HTTP_CODES.SUCCESS.OK)
+       .json({ card });
+}
+
 // Add routes
 server.get("/", getRoot);
 server.get("/tmp/poem", getPoem);
 server.get("/tmp/quote", getQuote);
 server.post("/tmp/sum/:a/:b", postSum);
+server.post("/tmp/deck", createDeck);
+server.patch("/tmp/deck/shuffle/:deck_id", shuffleDeck);
+server.get("/tmp/deck/:deck_id", getDeck);
+server.get("/tmp/deck/:deck_id/card", drawCard);
 
 server.listen(server.get('port'), function () {
     console.log('server running', server.get('port'));
