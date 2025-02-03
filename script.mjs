@@ -2,7 +2,7 @@ import express from 'express'
 import HTTP_CODES from './utils/httpCodes.mjs';
 import Deck from './models/Deck.mjs';
 import { v4 as uuidv4 } from 'uuid';
-import log from './modules/log.mjs';
+
 
 const server = express();
 const port = (process.env.PORT || 8000);
@@ -23,7 +23,7 @@ const quotes = [
 server.set('port', port);
 server.use(express.static('public'));
 server.use(express.json());  // Add JSON parser middleware
-server.use(log);  // Use the log middleware
+
 
 // Store for decks
 const decks = new Map();
