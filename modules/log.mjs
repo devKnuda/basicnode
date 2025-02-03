@@ -8,6 +8,14 @@ export const LogLevel = {
     DEBUG: 3
 };
 
+const LogColors = {
+    ERROR: '\x1b[31m', // Red
+    WARN: '\x1b[33m',  // Yellow
+    INFO: '\x1b[36m',  // Cyan
+    DEBUG: '\x1b[90m', // Gray
+    RESET: '\x1b[0m'   // Reset
+};
+
 // Private instance using closure
 let instance = null;
 
@@ -21,7 +29,8 @@ function createLogger() {
         const metaStr = Object.entries(meta)
             .map(([key, value]) => `${key}=${value}`)
             .join(' ');
-        return `[${timestamp}] ${logLevel.padEnd(5)} ${message} ${metaStr}`;
+        const color = LogColors[logLevel] || LogColors.RESET;
+        return `${color}[${timestamp}] ${logLevel.padEnd(5)} ${message} ${metaStr}${LogColors.RESET}`;
     };
 
     return {
