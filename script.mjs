@@ -71,6 +71,7 @@ function createDeck(req, res) {
     const deckId = uuidv4();
     const deck = new Deck(deckId);
     decks.set(deckId, deck);
+    logger.log('INFO', 'New deck created', { deckId });
     res.status(HTTP_CODES.SUCCESS.CREATED).json({ deck_id: deckId });
 }
 
@@ -101,16 +102,25 @@ function getDeck(req, res) {
 function drawCard(req, res) {
     const deck = decks.get(req.params.deck_id);
     if (!deck) {
+        logger.log('WARN', 'Deck not found', { deckId: req.params.deck_id });
         return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
                  .json({ error: 'Deck not found' });
     }
     const card = deck.drawCard();
     if (!card) {
+        logger.log('DEBUG', 'No cards left in deck', { deckId: req.params.deck_id });
         return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
                  .json({ error: 'No cards left' });
     }
-    res.status(HTTP_CODES.SUCCESS.OK)
-       .json({ card });
+    logger.log('INFO', 'Card drawn', { 
+        deckId: req.params.deck_id, 
+        cardValue: card.value, 
+        cardSuit: card.suit,
+        card: `${card.value}${card.suit === 'hearts' ? '♥' : 
+                              card.suit === 'diamonds' ? '♦' : 
+                              card.suit === 'clubs' ? '♣' : '♠'}`
+    });
+    res.status(HTTP_CODES.SUCCESS.OK).json({ card });
 }
 
 // Add routes
