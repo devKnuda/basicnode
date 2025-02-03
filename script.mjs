@@ -2,6 +2,7 @@ import express from 'express'
 import HTTP_CODES from './utils/httpCodes.mjs';
 import Deck from './models/Deck.mjs';
 import { v4 as uuidv4 } from 'uuid';
+import log from './modules/log.mjs';
 
 const server = express();
 const port = (process.env.PORT || 8000);
@@ -22,6 +23,7 @@ const quotes = [
 server.set('port', port);
 server.use(express.static('public'));
 server.use(express.json());  // Add JSON parser middleware
+server.use(log);  // Use the log middleware
 
 // Store for decks
 const decks = new Map();
@@ -63,7 +65,7 @@ function createDeck(req, res) {
     const deckId = uuidv4();
     const deck = new Deck(deckId);
     decks.set(deckId, deck);
-    res.status(HTTP_CODES.SUCCESS.OK).json({ deck_id: deckId });
+    res.status(HTTP_CODES.SUCCESS.CREATED).json({ deck_id: deckId });
 }
 
 // Shuffle deck
@@ -114,6 +116,12 @@ server.post("/tmp/deck", createDeck);
 server.patch("/tmp/deck/shuffle/:deck_id", shuffleDeck);
 server.get("/tmp/deck/:deck_id", getDeck);
 server.get("/tmp/deck/:deck_id/card", drawCard);
+
+server.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(HTTP_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR)
+       .json({ error: 'Internal Server Error' });
+});
 
 server.listen(server.get('port'), function () {
     console.log('server running', server.get('port'));
