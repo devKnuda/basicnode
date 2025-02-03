@@ -1,5 +1,8 @@
 // modules/log.mjs
 import HTTP_CODES from '../utils/httpCodes.mjs';
+import * as fs from 'fs';
+import { promises as fsPromises } from 'fs';
+import path from 'path';
 
 export const LogLevel = {
     ERROR: 0,
@@ -19,10 +22,40 @@ const LogColors = {
 // Private instance using closure
 let instance = null;
 
+// Create logs directory if it doesn't exist
+const logDir = './logs';
+const logFile = path.join(logDir, 'app.csv');
+
+async function initializeLogFile() {
+    try {
+        if (!fs.existsSync(logDir)) {
+            await fsPromises.mkdir(logDir);
+        }
+        if (!fs.existsSync(logFile)) {
+            await fsPromises.writeFile(logFile, 'timestamp,level,message,metadata\n');
+        }
+    } catch (err) {
+        console.error('Error initializing log file:', err);
+    }
+}
+
+// Initialize log file
+await initializeLogFile();
+
 // Create logger instance
 function createLogger() {
     let level = LogLevel.INFO;
     let enabled = true;
+
+    const writeToFile = async (timestamp, logLevel, message, meta = {}) => {
+        try {
+            const metaStr = JSON.stringify(meta).replace(/"/g, '""');
+            const logLine = `"${timestamp}","${logLevel}","${message}","${metaStr}"\n`;
+            await fsPromises.appendFile(logFile, logLine);
+        } catch (err) {
+            console.error('Error writing to log file:', err);
+        }
+    };
 
     const formatMessage = (logLevel, message, meta = {}) => {
         const timestamp = new Date().toISOString();
@@ -36,7 +69,10 @@ function createLogger() {
             .map(([key, value]) => `\n\t${key}: ${value}`)
             .join('');
         
-        // Create structured log message
+        // Write to CSV file
+        writeToFile(timestamp, logLevel, message, meta);
+        
+        // Return console formatted message
         return `${color}[${formattedTime}] ${logLevel.padEnd(5)} ${message}${metaStr}${LogColors.RESET}`;
     };
 
