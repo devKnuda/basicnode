@@ -26,11 +26,18 @@ function createLogger() {
 
     const formatMessage = (logLevel, message, meta = {}) => {
         const timestamp = new Date().toISOString();
-        const metaStr = Object.entries(meta)
-            .map(([key, value]) => `${key}=${value}`)
-            .join(' ');
         const color = LogColors[logLevel] || LogColors.RESET;
-        return `${color}[${timestamp}] ${logLevel.padEnd(5)} ${message} ${metaStr}${LogColors.RESET}`;
+        
+        // Format timestamp to be more readable
+        const formattedTime = timestamp.replace('T', ' ').split('.')[0];
+        
+        // Format metadata with better structure
+        const metaStr = Object.entries(meta)
+            .map(([key, value]) => `\n\t${key}: ${value}`)
+            .join('');
+        
+        // Create structured log message
+        return `${color}[${formattedTime}] ${logLevel.padEnd(5)} ${message}${metaStr}${LogColors.RESET}`;
     };
 
     return {
