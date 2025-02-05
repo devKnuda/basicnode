@@ -3,6 +3,7 @@ import HTTP_CODES from './utils/httpCodes.mjs';
 import Deck from './models/Deck.mjs';
 import { v4 as uuidv4 } from 'uuid';
 import { logger, LogLevel, loggingMiddleware } from './modules/log.mjs';
+import { createRateLimiter } from './modules/rateLimiter.mjs';
 
 const server = express();
 const port = (process.env.PORT || 8000);
@@ -30,6 +31,14 @@ logger.setEnabled(true);        // Enable/disable logging
 
 // Add logging middleware
 server.use(loggingMiddleware);
+
+const rateLimiter = createRateLimiter({
+    windowMs: 60000,    // 1 minute window
+    maxRequests: 100,   // max 100 requests per minute
+    message: 'Too many requests. Please try again later.'
+});
+
+server.use(rateLimiter);
 
 // Store for decks
 const decks = new Map();
