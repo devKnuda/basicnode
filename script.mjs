@@ -32,12 +32,14 @@ logger.setEnabled(true);        // Enable/disable logging
 // Add logging middleware
 server.use(loggingMiddleware);
 
+//configure rate limiter
 const rateLimiter = createRateLimiter({
     windowMs: 60000,    // 1 minute window
     maxRequests: 100,   // max 100 requests per minute
     message: 'Too many requests. Please try again later.'
 });
 
+// add rate limiter middleware
 server.use(rateLimiter);
 
 // Store for decks
@@ -146,6 +148,7 @@ server.post("/tmp/deck", createDeck);
 server.patch("/tmp/deck/shuffle/:deck_id", shuffleDeck);
 server.get("/tmp/deck/:deck_id", getDeck);
 server.get("/tmp/deck/:deck_id/card", drawCard);
+
 
 server.use((err, req, res, next) => {
     console.error(err.stack);
