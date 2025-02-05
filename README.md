@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project is part of the AppDev2 course, week 3. The goal is to practice working with Git, refactoring code, and using Express.js to handle HTTP requests.
+This project is part of the AppDev2 course, The goal is to practice working with Git, refactoring code, and using Express.js to handle HTTP requests.
 
 ## Features
 
