@@ -121,15 +121,20 @@ function drawCard(req, res) {
         return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
                  .json({ error: 'No cards left' });
     }
+
+    // Log both the card and the response being sent
+    const cardResponse = { card };
     logger.log('INFO', 'Card drawn', { 
         deckId: req.params.deck_id, 
         cardValue: card.value, 
         cardSuit: card.suit,
         card: `${card.value}${card.suit === 'hearts' ? '♥' : 
                               card.suit === 'diamonds' ? '♦' : 
-                              card.suit === 'clubs' ? '♣' : '♠'}`
+                              card.suit === 'clubs' ? '♣' : '♠'}`,
+        response: JSON.stringify(cardResponse)
     });
-    res.status(HTTP_CODES.SUCCESS.OK).json({ card });
+    
+    res.status(HTTP_CODES.SUCCESS.OK).json(cardResponse);
 }
 
 // Add routes
