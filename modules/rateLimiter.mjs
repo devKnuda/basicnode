@@ -5,7 +5,7 @@ import HTTP_CODES from '../utils/httpCodes.mjs';
 export function createRateLimiter(options = {}) {
     const {
         windowMs = 60000, // 1 minute default
-        maxRequests = 100, // max requests per window
+        maxRequests = 1000, // max requests per window
         message = 'Too many requests, please try again later.'
     } = options;
 
@@ -48,14 +48,14 @@ export function createRateLimiter(options = {}) {
             logger.log('WARN', 'Rate limit exceeded', {
                 ip: key,
                 requests: data.count,
-                window: `${windowMs/1000}s`
+                window: `${windowMs / 1000}s`
             });
 
             return res.status(HTTP_CODES.CLIENT_ERROR.TOO_MANY_REQUESTS)
-                     .json({
-                         error: message,
-                         retryAfter: Math.ceil((data.timestamp + windowMs - now) / 1000)
-                     });
+                .json({
+                    error: message,
+                    retryAfter: Math.ceil((data.timestamp + windowMs - now) / 1000)
+                });
         }
 
         // Update request count
@@ -67,7 +67,7 @@ export function createRateLimiter(options = {}) {
             ip: key,
             requests: data.count,
             remaining: maxRequests - data.count,
-            window: `${windowMs/1000}s`
+            window: `${windowMs / 1000}s`
         });
 
         next();
