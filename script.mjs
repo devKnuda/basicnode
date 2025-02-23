@@ -6,6 +6,17 @@ import { logger, LogLevel, loggingMiddleware } from './modules/log.mjs';
 import { createRateLimiter } from './modules/rateLimiter.mjs';
 import chessGameRouter from './modules/chessGameRouter.mjs';
 
+// Add these near the top of your file
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    // Log error but don't exit
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Log error but don't exit
+});
+
 const server = express();
 const port = (process.env.PORT || 8000);
 

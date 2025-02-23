@@ -302,12 +302,19 @@ export class ChessGame {
         const blackKingAlive = this.board.flat().some(
             p => p && p.type === PieceTypes.KING && p.color === Colors.BLACK
         );
+
+        // Instead of throwing, return game over status
         if (!whiteKingAlive || !blackKingAlive) {
-            // Optionally mark game as over
-            throw new Error(`Game Over: ${!whiteKingAlive ? 'White' : 'Black'} king captured`);
+            this.gameOver = true;
+            this.winner = whiteKingAlive ? Colors.WHITE : Colors.BLACK;
+            return {
+                gameOver: true,
+                winner: this.winner
+            };
         }
 
         // Switch turn
         this.turn = this.turn === Colors.WHITE ? Colors.BLACK : Colors.WHITE;
+        return { gameOver: false };
     }
 }
