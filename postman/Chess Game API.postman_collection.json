@@ -1,0 +1,99 @@
+{
+	"info": {
+		"_postman_id": "1755a32b-357f-48ed-a37a-91dc680b0194",
+		"name": "Chess Game API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42565293"
+	},
+	"item": [
+		{
+			"name": "Create New Game",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/chess",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chess"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Game State",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/chess/{{gameId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chess",
+						"{{gameId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Make Move",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/chess/{{gameId}}/move\nHeaders:\nContent-Type: application/json\n\nBody (raw JSON):\n{\n    \"from\": {\n        \"row\": 6,\n        \"col\": 0\n    },\n    \"to\": {\n        \"row\": 4,\n        \"col\": 0\n    }\n}\n",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chess",
+						"{{gameId}}",
+						"move\nHeaders:\nContent-Type: application",
+						"json\n\nBody (raw JSON):\n{\n    \"from\": {\n        \"row\": 6,\n        \"col\": 0\n    },\n    \"to\": {\n        \"row\": 4,\n        \"col\": 0\n    }\n}\n"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Game",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/chess/{{gameId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chess",
+						"{{gameId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
