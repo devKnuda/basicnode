@@ -36,7 +36,7 @@ server.use(loggingMiddleware);
 //configure rate limiter
 const rateLimiter = createRateLimiter({
     windowMs: 60000,    // 1 minute window
-    maxRequests: 100,   // max 100 requests per minute
+    maxRequests: 1000,   // max 100 requests per minute
     message: 'Too many requests. Please try again later.'
 });
 
