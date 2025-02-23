@@ -4,6 +4,10 @@
 
 This project is part of the AppDev2 course, The goal is to practice working with Git, refactoring code, and using Express.js to handle HTTP requests.
 
+## Deployment
+
+The application is deployed and accessible at: https://seahorse-app-qdjex.ondigitalocean.app/
+
 ## Features
 
 - RESTful Card Deck API
@@ -88,4 +92,4 @@ npm install
 ```sh
 Node script.mjs
 ```
-The server will run on port 8000 by default (configurable via PORT environment variable). 
+The server will run on port 8000 by default (configurable via PORT environment variable).
