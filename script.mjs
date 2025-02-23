@@ -4,6 +4,7 @@ import Deck from './models/Deck.mjs';
 import { v4 as uuidv4 } from 'uuid';
 import { logger, LogLevel, loggingMiddleware } from './modules/log.mjs';
 import { createRateLimiter } from './modules/rateLimiter.mjs';
+import chessGameRouter from './modules/chessGameRouter.mjs';
 
 const server = express();
 const port = (process.env.PORT || 8000);
@@ -64,17 +65,17 @@ function getQuote(req, res, next) {
 function postSum(req, res) {
     const a = parseInt(req.params.a);
     const b = parseInt(req.params.b);
-    
+
     if (isNaN(a) || isNaN(b)) {
         return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
-                 .send('Parameters must be numbers')
-                 .end();
+            .send('Parameters must be numbers')
+            .end();
     }
-    
+
     const sum = a + b;
     res.status(HTTP_CODES.SUCCESS.OK)
-       .send({ result: sum })
-       .end();
+        .send({ result: sum })
+        .end();
 }
 
 // Create new deck
@@ -91,11 +92,11 @@ function shuffleDeck(req, res) {
     const deck = decks.get(req.params.deck_id);
     if (!deck) {
         return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
-                 .json({ error: 'Deck not found' });
+            .json({ error: 'Deck not found' });
     }
     deck.shuffle();
     res.status(HTTP_CODES.SUCCESS.OK)
-       .json({ message: 'Deck shuffled' });
+        .json({ message: 'Deck shuffled' });
 }
 
 // Get deck
@@ -103,10 +104,10 @@ function getDeck(req, res) {
     const deck = decks.get(req.params.deck_id);
     if (!deck) {
         return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
-                 .json({ error: 'Deck not found' });
+            .json({ error: 'Deck not found' });
     }
     res.status(HTTP_CODES.SUCCESS.OK)
-       .json({ cards: deck.cards });
+        .json({ cards: deck.cards });
 }
 
 // Draw card
@@ -115,27 +116,27 @@ function drawCard(req, res) {
     if (!deck) {
         logger.log('WARN', 'Deck not found', { deckId: req.params.deck_id });
         return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
-                 .json({ error: 'Deck not found' });
+            .json({ error: 'Deck not found' });
     }
     const card = deck.drawCard();
     if (!card) {
         logger.log('DEBUG', 'No cards left in deck', { deckId: req.params.deck_id });
         return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
-                 .json({ error: 'No cards left' });
+            .json({ error: 'No cards left' });
     }
 
     // Log both the card and the response being sent
     const cardResponse = { card };
-    logger.log('INFO', 'Card drawn', { 
-        deckId: req.params.deck_id, 
-        cardValue: card.value, 
+    logger.log('INFO', 'Card drawn', {
+        deckId: req.params.deck_id,
+        cardValue: card.value,
         cardSuit: card.suit,
-        card: `${card.value}${card.suit === 'hearts' ? '♥' : 
-                              card.suit === 'diamonds' ? '♦' : 
-                              card.suit === 'clubs' ? '♣' : '♠'}`,
+        card: `${card.value}${card.suit === 'hearts' ? '♥' :
+            card.suit === 'diamonds' ? '♦' :
+                card.suit === 'clubs' ? '♣' : '♠'}`,
         response: JSON.stringify(cardResponse)
     });
-    
+
     res.status(HTTP_CODES.SUCCESS.OK).json(cardResponse);
 }
 
@@ -149,11 +150,12 @@ server.patch("/tmp/deck/shuffle/:deck_id", shuffleDeck);
 server.get("/tmp/deck/:deck_id", getDeck);
 server.get("/tmp/deck/:deck_id/card", drawCard);
 
+server.use('/api', chessGameRouter);
 
 server.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(HTTP_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR)
-       .json({ error: 'Internal Server Error' });
+        .json({ error: 'Internal Server Error' });
 });
 
 server.listen(server.get('port'), function () {
