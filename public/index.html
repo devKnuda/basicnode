@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#333333">
     <title>Chess Game Manager</title>
 </head>
 
@@ -19,7 +21,7 @@
 
         <div class="controls">
             <button id="newGame">New Game</button>
-            <input type="text" id="gameId" placeholder="Game ID">
+            <input type="text" id="gameId" placeholder="Game ID" readonly>
             <input type="text" id="moveFrom" placeholder="From (row,col)">
             <input type="text" id="moveTo" placeholder="To (row,col)">
             <button id="makeMove">Make Move</button>
@@ -30,6 +32,18 @@
         </div>
     </div>
     <script src="js/chess.js"></script>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/js/serviceWorker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful:', registration.scope);
+                })
+                .catch(err => {
+                    console.error('ServiceWorker registration failed:', err);
+                });
+        }
+    </script>
 </body>
 
 </html>
