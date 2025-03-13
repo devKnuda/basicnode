@@ -5,6 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger, LogLevel, loggingMiddleware } from './modules/log.mjs';
 import { createRateLimiter } from './modules/rateLimiter.mjs';
 import chessGameRouter from './modules/chessGameRouter.mjs';
+import dotenv from 'dotenv';
+import db from './utils/db.mjs';
+
+// Load environment variables
+dotenv.config();
 
 // Add these near the top of your file
 process.on('uncaughtException', (err) => {
@@ -90,65 +95,135 @@ function postSum(req, res) {
 }
 
 // Create new deck
-function createDeck(req, res) {
-    const deckId = uuidv4();
-    const deck = new Deck(deckId);
-    decks.set(deckId, deck);
-    logger.log('INFO', 'New deck created', { deckId });
-    res.status(HTTP_CODES.SUCCESS.CREATED).json({ deck_id: deckId });
+async function createDeck(req, res) {
+    try {
+        const deckId = uuidv4();
+        const deck = new Deck(deckId);
+        
+        await db.query(
+            'INSERT INTO decks(id, cards) VALUES($1, $2)',
+            [deckId, JSON.stringify(deck.cards)]
+        );
+        
+        logger.log('INFO', 'New deck created', { deckId });
+        res.status(HTTP_CODES.SUCCESS.CREATED).json({ deck_id: deckId });
+    } catch (error) {
+        logger.log('ERROR', 'Failed to create deck', { error: error.message });
+        res.status(HTTP_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR)
+           .json({ error: 'Failed to create deck' });
+    }
 }
 
 // Shuffle deck
-function shuffleDeck(req, res) {
-    const deck = decks.get(req.params.deck_id);
-    if (!deck) {
-        return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
-            .json({ error: 'Deck not found' });
+async function shuffleDeck(req, res) {
+    try {
+        const { rows } = await db.query(
+            'SELECT * FROM decks WHERE id = $1',
+            [req.params.deck_id]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
+                     .json({ error: 'Deck not found' });
+        }
+        
+        const deck = new Deck(rows[0].id);
+        deck.cards = rows[0].cards;
+        deck.shuffle();
+        
+        await db.query(
+            'UPDATE decks SET cards = $1 WHERE id = $2',
+            [JSON.stringify(deck.cards), deck.id]
+        );
+        
+        res.status(HTTP_CODES.SUCCESS.OK)
+           .json({ message: 'Deck shuffled' });
+    } catch (error) {
+        logger.log('ERROR', 'Failed to shuffle deck', { error: error.message });
+        res.status(HTTP_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR)
+           .json({ error: 'Failed to shuffle deck' });
     }
-    deck.shuffle();
-    res.status(HTTP_CODES.SUCCESS.OK)
-        .json({ message: 'Deck shuffled' });
 }
 
 // Get deck
-function getDeck(req, res) {
-    const deck = decks.get(req.params.deck_id);
-    if (!deck) {
-        return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
-            .json({ error: 'Deck not found' });
+async function getDeck(req, res) {
+    try {
+        const { rows } = await db.query(
+            'SELECT * FROM decks WHERE id = $1',
+            [req.params.deck_id]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
+                     .json({ error: 'Deck not found' });
+        }
+        
+        res.status(HTTP_CODES.SUCCESS.OK)
+           .json({ cards: rows[0].cards });
+    } catch (error) {
+        logger.log('ERROR', 'Failed to get deck', { error: error.message });
+        res.status(HTTP_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR)
+           .json({ error: 'Failed to get deck' });
     }
-    res.status(HTTP_CODES.SUCCESS.OK)
-        .json({ cards: deck.cards });
 }
 
 // Draw card
-function drawCard(req, res) {
-    const deck = decks.get(req.params.deck_id);
-    if (!deck) {
-        logger.log('WARN', 'Deck not found', { deckId: req.params.deck_id });
-        return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
-            .json({ error: 'Deck not found' });
+async function drawCard(req, res) {
+    try {
+        const client = await db.getClient();
+        
+        try {
+            await client.query('BEGIN');
+            
+            const { rows } = await client.query(
+                'SELECT * FROM decks WHERE id = $1 FOR UPDATE',
+                [req.params.deck_id]
+            );
+            
+            if (rows.length === 0) {
+                await client.query('ROLLBACK');
+                logger.log('WARN', 'Deck not found', { deckId: req.params.deck_id });
+                return res.status(HTTP_CODES.CLIENT_ERROR.NOT_FOUND)
+                         .json({ error: 'Deck not found' });
+            }
+            
+            const deck = new Deck(rows[0].id);
+            deck.cards = rows[0].cards;
+            
+            const card = deck.drawCard();
+            if (!card) {
+                await client.query('ROLLBACK');
+                logger.log('DEBUG', 'No cards left in deck', { deckId: req.params.deck_id });
+                return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
+                         .json({ error: 'No cards left' });
+            }
+            
+            await client.query(
+                'UPDATE decks SET cards = $1 WHERE id = $2',
+                [JSON.stringify(deck.cards), deck.id]
+            );
+            
+            await client.query('COMMIT');
+            
+            const cardResponse = { card };
+            logger.log('INFO', 'Card drawn', {
+                deckId: req.params.deck_id,
+                cardValue: card.value,
+                cardSuit: card.suit
+            });
+            
+            res.status(HTTP_CODES.SUCCESS.OK).json(cardResponse);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        logger.log('ERROR', 'Failed to draw card', { error: error.message });
+        res.status(HTTP_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR)
+           .json({ error: 'Failed to draw card' });
     }
-    const card = deck.drawCard();
-    if (!card) {
-        logger.log('DEBUG', 'No cards left in deck', { deckId: req.params.deck_id });
-        return res.status(HTTP_CODES.CLIENT_ERROR.BAD_REQUEST)
-            .json({ error: 'No cards left' });
-    }
-
-    // Log both the card and the response being sent
-    const cardResponse = { card };
-    logger.log('INFO', 'Card drawn', {
-        deckId: req.params.deck_id,
-        cardValue: card.value,
-        cardSuit: card.suit,
-        card: `${card.value}${card.suit === 'hearts' ? '♥' :
-            card.suit === 'diamonds' ? '♦' :
-                card.suit === 'clubs' ? '♣' : '♠'}`,
-        response: JSON.stringify(cardResponse)
-    });
-
-    res.status(HTTP_CODES.SUCCESS.OK).json(cardResponse);
 }
 
 // Add routes
@@ -171,4 +246,30 @@ server.use((err, req, res, next) => {
 
 server.listen(server.get('port'), function () {
     console.log('server running', server.get('port'));
+    
+    // Test DB connection after server starts
+    testDBConnection();
 });
+
+// Add near server start, after db import
+async function testDBConnection() {
+  try {
+    const result = await db.query('SELECT NOW() as now');
+    logger.log('INFO', 'Database test query successful', { time: result.rows[0].now });
+    
+    // Try inserting test data
+    const testUuid = uuidv4();
+    await db.query(
+      'INSERT INTO chess_games(id, board, turn) VALUES($1, $2, $3)',
+      [testUuid, JSON.stringify([]), 'white']
+    );
+    logger.log('INFO', 'Test insert successful', { id: testUuid });
+    
+    // Then delete it
+    await db.query('DELETE FROM chess_games WHERE id = $1', [testUuid]);
+  } catch (err) {
+    logger.log('ERROR', 'Database test failed', { error: err.message });
+  }
+}
+
+testDBConnection();
