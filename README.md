@@ -1,95 +1,104 @@
-# Basic Node Project
+# Chess Game Application
 
 ## Introduction
 
-This project is part of the AppDev2 course, The goal is to practice working with Git, refactoring code, and using Express.js to handle HTTP requests.
+This full-stack application demonstrates a chess game system with a PWA client and RESTful API backend. The app includes features for creating chess games, making moves, and card deck operations, with all data persisted in PostgreSQL.
 
 ## Deployment
 
-The application is deployed and accessible at: https://seahorse-app-qdjex.ondigitalocean.app/
+The application is deployed and accessible at: https://basicnode-a65w.onrender.com/
 
-## Features
+## Application Architecture
 
-- RESTful Card Deck API
-- Real-time logging with different levels (ERROR, WARN, INFO, DEBUG)
-- Rate limiting protection
-- Web interface for deck manipulation
-- CSV log storage
-- Color-coded console output
+### Client Application
+- Built with HTML, CSS, and vanilla JavaScript
+- Progressive Web App (PWA) capabilities:
+  - Installable via manifest.json
+  - Service worker for offline functionality
+  - Theme color and app icons
+- Communicates with server exclusively via JSON API endpoints
 
-## API Endpoints
+### Server Application
+- Node.js with Express
+- Custom middleware implementations:
+  - Logging middleware for request/response tracking
+  - Rate limiter for protection against excessive requests
+- RESTful CRUD API for chess games and card decks
+- Data abstraction layer:
+  - `ChessGame`, `Deck`, and `Card` classes
+  - Game state management and validation
+- Persistence manager:
+  - Database connection pooling
+  - Transaction support for data integrity
+  - Parameterized queries for security
 
-### Card Deck Operations
+### Database
+- PostgreSQL hosted on Render
+- Tables:
+  - `chess_games`: Stores game state, board configuration, and turn information
+  - `decks`: Stores card deck information
+- SQL script for table creation:
+```sql
+CREATE TABLE IF NOT EXISTS chess_games (
+  id UUID PRIMARY KEY,
+  board JSONB NOT NULL,
+  turn VARCHAR(10) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-#### Create a New Deck
-```sh
-curl -X POST http://localhost:8000/tmp/deck
-```
-Creates and returns a new deck_id
+CREATE TABLE IF NOT EXISTS decks (
+  id UUID PRIMARY KEY,
+  cards JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-#### Draw a Card
-```sh
-curl http://localhost:8000/tmp/deck/{deck_id}/card
-```
-Draws the top card from the specified deck.
+Create a New Chess Game
+curl -X POST https://basicnode-a65w.onrender.com/api/chess
 
-#### Shuffle Deck
-```sh
-curl -X PATCH http://localhost:8000/tmp/deck/shuffle/{deck_id}
-```
-Randomly shuffles the specified deck.
+Get Game State
+curl https://basicnode-a65w.onrender.com/api/chess/{game_id}
 
-#### View Deck
-```sh
-curl http://localhost:8000/tmp/deck/{deck_id}
-```
-Returns all remaining cards in the deck.
+Make a Move
+curl -X PUT https://basicnode-a65w.onrender.com/api/chess/{game_id}/move \
+  -H "Content-Type: application/json" \
+  -d '{"from": {"row": 6, "col": 0}, "to": {"row": 4, "col": 0}}'
 
-### Additional Endpoints
-Get random Quote
+  Delete a Game
+  curl -X DELETE https://basicnode-a65w.onrender.com/api/chess/{game_id}
 
-Returns all remaining cards in the deck.
-```sh
-curl http://localhost:8000/tmp/quote
-```
-Returns a poem.
 
-### Calculate Sum
-```sh
-curl -X POST http://localhost:8000/tmp/sum/5/10
-```
-Returns the sum of two numbers. (Replace 5 and 10 with any number).
+Card Deck Operations
+Create a New Deck
+curl -X POST https://basicnode-a65w.onrender.com/tmp/deck
 
-# Security Features
+Draw a Card
+curl https://basicnode-a65w.onrender.com/tmp/deck/{deck_id}/card
 
-## Rate Limiting
+Shuffle Deck
+curl -X PATCH https://basicnode-a65w.onrender.com/tmp/deck/shuffle/{deck_id}
+
+View Deck
+curl https://basicnode-a65w.onrender.com/tmp/deck/{deck_id}
+
+Get Random Quote
+curl https://basicnode-a65w.onrender.com/tmp/poem
+
+Calculate Sum
+curl -X POST https://basicnode-a65w.onrender.com/tmp/sum/5/10
+
+Security Features
+Rate Limiting
 100 requests per minute per IP
 Automatic cleanup of old request data
 Configurable window and request limit
-
-## Logging
+Logging
 Multiple log levels (ERROR, WARN, INFO, DEBUG)
 CSV file logging in app.csv
 Color-coded console output
 Request duration tracking
 Detailed error logging
-
-# Web Interface
-Access the web interface at http://localhost:8000 to:
-
-Create new decks
-Draw cards with animations
-Shuffle decks
-View all cards in a deck
-Hide/show deck view
-
-# Installation
-1. Install dependencies:
-```sh
-npm install
-```
-2. Start the server:
-```sh
-Node script.mjs
-```
-The server will run on port 8000 by default (configurable via PORT environment variable).
+Database Security
+Connection pooling for efficient resource use
+Parameterized queries to prevent SQL injection
+Environment-based configuration
+SSL encryption for database connections
