@@ -51,40 +51,41 @@ CREATE TABLE IF NOT EXISTS decks (
   cards JSONB NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+```
 
 Create a New Chess Game
-curl -X POST https://basicnode-a65w.onrender.com/api/chess
+```curl -X POST https://basicnode-a65w.onrender.com/api/chess```
 
 Get Game State
-curl https://basicnode-a65w.onrender.com/api/chess/{game_id}
+```curl https://basicnode-a65w.onrender.com/api/chess/{game_id}```
 
 Make a Move
-curl -X PUT https://basicnode-a65w.onrender.com/api/chess/{game_id}/move \
+```curl -X PUT https://basicnode-a65w.onrender.com/api/chess/{game_id}/move ```\
   -H "Content-Type: application/json" \
   -d '{"from": {"row": 6, "col": 0}, "to": {"row": 4, "col": 0}}'
 
   Delete a Game
-  curl -X DELETE https://basicnode-a65w.onrender.com/api/chess/{game_id}
+  ```curl -X DELETE https://basicnode-a65w.onrender.com/api/chess/{game_id}```
 
 
 Card Deck Operations
 Create a New Deck
-curl -X POST https://basicnode-a65w.onrender.com/tmp/deck
+```curl -X POST https://basicnode-a65w.onrender.com/tmp/deck```
 
 Draw a Card
-curl https://basicnode-a65w.onrender.com/tmp/deck/{deck_id}/card
+```curl https://basicnode-a65w.onrender.com/tmp/deck/{deck_id}/card```
 
 Shuffle Deck
-curl -X PATCH https://basicnode-a65w.onrender.com/tmp/deck/shuffle/{deck_id}
+```curl -X PATCH https://basicnode-a65w.onrender.com/tmp/deck/shuffle/{deck_id}```
 
 View Deck
-curl https://basicnode-a65w.onrender.com/tmp/deck/{deck_id}
+```curl https://basicnode-a65w.onrender.com/tmp/deck/{deck_id}```
 
 Get Random Quote
-curl https://basicnode-a65w.onrender.com/tmp/poem
+```curl https://basicnode-a65w.onrender.com/tmp/poem```
 
 Calculate Sum
-curl -X POST https://basicnode-a65w.onrender.com/tmp/sum/5/10
+```curl -X POST https://basicnode-a65w.onrender.com/tmp/sum/5/10```
 
 Security Features
 Rate Limiting
